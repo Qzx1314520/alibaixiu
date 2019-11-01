@@ -8,8 +8,7 @@ $(function() {
             type: 'post',
             data: formData,
             success: function(data) {
-                location.reload()
-                    // console.log(formData);
+                location.reload() 
             },
             error: function() {
                 alert('用户添加失败');
@@ -18,11 +17,15 @@ $(function() {
         return false;
     })
 
+
     // 上传用户头像
     $('#avatar').on('change', function() {
+        
         var formData = new FormData();
-        formData.append('avatar', this.files[0])
 
+        formData.append('avatar', this.files[0]);
+        // console.log(formData);
+        // console.log(this.files[0]);
         $.ajax({
             url: '/upload',
             type: 'post',
@@ -30,16 +33,17 @@ $(function() {
             processData: false,
             contentType: false,
             success: function(data) {
-                console.log(data);
+                // console.log(data);
                 $('#youphoto').attr('src', data[0].avatar);
-                $('#avatarHidden').val(data[0].avatar)
+                // 使用隐藏标签将图片地址存在页面
+                $('#avatarHidden').val(data[0].avatar);
                 console.log(data[0].avatar);
             },
             error: function() {
                 console.log('你的文件上传失败');
             }
-
         })
+
     })
 
     // 数据列表头像展示
@@ -122,6 +126,59 @@ $(function() {
                }
            })
        }
+    })
+
+    //批量删除
+
+    var selectAll = $('#selectAll');
+    var delMany = $('#delMany');
+
+        // 选中复选框
+    selectAll.on('change', function() {
+        var status = $(this).prop('checked');
+
+        $('#userBody').find('.findOne').prop('checked', status)
+         if (status) {
+            delMany.show();
+        } else {
+            delMany.hide();
+        }
+    })
+        // 选中单选框   
+    $('#userBody').on('change', '.findOne', function () {
+        var inputs = $('#userBody').find('.findOne');
+
+        if ( inputs.length === inputs.filter(':checked').length) {
+            selectAll.prop('checked',true);
+        } else {
+            selectAll.prop('checked',false);
+        }
+
+        // 批量删除按钮显示隐藏
+        if (inputs.filter(':checked').length > 0) {
+            delMany.show();
+        } else {
+            delMany.hide();
+        }
+    })
+
+    // 批量删除按钮的点击删除事件
+    delMany.on('click',function () {
+        var inputs = $('#userBody').find('.findOne').filter(':checked');
+        var arr = [];
+
+        // 遍历向数组添加元素
+        inputs.each(function (index, dom) {
+            arr.push($(dom).attr('data-id'))
+        })
+        // console.log(arr);
+        $.ajax({
+            url:`/users/${arr.join('-')}`,
+            type: 'delete',
+            success: function (data) {
+                location.reload();
+            }
+        })
     })
     
 });
